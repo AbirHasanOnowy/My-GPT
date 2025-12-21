@@ -1,8 +1,13 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/multimodal_db"
-    SECRET_KEY: str = "CHANGE_ME"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    DATABASE_URL: str           # Will be read from .env
+    SECRET_KEY: str             # Will be read from .env
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # Default value if not in .env
 
+    class Config:
+        env_file = ".env"       # Load environment variables from this file
+        env_file_encoding = "utf-8"
+
+# Instantiate settings
 settings = Settings()
