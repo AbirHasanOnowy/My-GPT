@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv/
+venv/
+penv/
+env/
+*.egg-info/
+pip-wheel-metadata/
+
+# Environment / Secrets
+.env
+core/config.py   # If it contains SECRET_KEY / DB passwords (or keep a template config instead)
+
+# VS Code / IDE
+.vscode/
+.idea/
+
+# Bytecode / caches
+*.sqlite3
+*.db-journal
+*.log
+
+# Migrations / Alembic
+db/migrations/__pycache__/
+db/migrations/versions/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker/*.env
+docker/*.log
+
+# Others
+*.tmp
