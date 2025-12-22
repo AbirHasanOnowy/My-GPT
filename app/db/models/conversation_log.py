@@ -21,15 +21,16 @@ class ConversationLog(Base):
     )
 
     text_query = Column(Text, nullable=True)
-    image_urls = Column(JSONB, nullable=True)
 
+    # Stage 7+
+    image_urls = Column(JSONB, nullable=True)
     vlm_output = Column(JSONB, nullable=True)
-    # embedding = Column(Vector(EMBEDDING_DIM), nullable=True)
 
     response_text = Column(Text, nullable=False)
 
-    llm_model_name = Column(Text, nullable=False)
-    vlm_model_name = Column(Text, nullable=False)
+    # Stage 7+ (must be nullable for now)
+    llm_model_name = Column(Text, nullable=True)
+    vlm_model_name = Column(Text, nullable=True)
 
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
