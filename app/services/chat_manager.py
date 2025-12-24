@@ -1,17 +1,45 @@
-class ChatManager:
-    def __init__(self):
-        pass
+from typing import Dict, Optional
 
-    async def generate(self, text: str | None, vlm_output: dict | None) -> str:
-        prompt = "You are a multimodal assistant.\n\n"
+
+class ChatManager:
+    """
+    Chat Manager
+    Responsible for combining text + VLM output and
+    producing an LLM response.
+    """
+
+    def __init__(self, model_name: str = "llama-mock"):
+        self.model_name = model_name
+
+    async def generate_response(
+        self,
+        user_text: Optional[str],
+        vlm_output: Optional[Dict],
+    ) -> str:
+        """
+        Generate a reasoning-aware response using LLM.
+        """
+
+        # ---- MOCK LLM IMPLEMENTATION ----
+        # Replace later with LLaMA / HF / OpenAI
+
+        response_parts = []
+
+        if user_text:
+            response_parts.append(f"User asked: '{user_text}'.")
 
         if vlm_output:
-            prompt += f"Image context:\n{vlm_output}\n\n"
+            objects = ", ".join(vlm_output.get("objects", []))
+            scene = vlm_output.get("scene", "unknown")
+            response_parts.append(
+                f"The image contains: {objects}. Scene: {scene}."
+            )
 
-        if text:
-            prompt += f"User query:\n{text}\n\n"
+        response_parts.append(
+            "Based on the provided information, this is a mock reasoning response."
+        )
 
-        prompt += "Provide a helpful response that reasons about the image."
+        return " ".join(response_parts)
 
-        # Stage 7 placeholder (LLM later)
-        return f"[MOCK RESPONSE]\n{prompt}"
+    def get_model_name(self) -> str:
+        return self.model_name
