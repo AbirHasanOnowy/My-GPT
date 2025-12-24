@@ -1,38 +1,48 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.db.models.conversation_log import ConversationLog
-from app.schemas.chat import ChatLogCreate, ChatLogOut
-from app.api.routes.auth import get_current_user
-from app.db.models.user import User
+from app.services.image_storage import save_image
+from app.services.multimodal_manager import MultimodalManager
+from app.services.vlm_manager import VLMManager
+from app.services.chat_manager import ChatManager
+from app.services.strategies.vlm.mock_vlm import MockVLMStrategy
 
 router = APIRouter()
 
-@router.post("/", response_model=ChatLogOut)
-def create_chat_log(
-    payload: ChatLogCreate,
+vlm_manager = VLMManager(MockVLMStrategy())
+chat_manager = ChatManager()
+multimodal_manager = MultimodalManager(vlm_manager, chat_manager)
+
+
+@router.post("/")
+async def multimodal_chat(
+    text: str | None = Form(None),
+    images: list[UploadFile] | None = File(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    user=Depends(get_current_user),
 ):
+    image_paths = []
+
+    if images:
+        for img in images:
+            path = await save_image(img)
+            image_paths.append(path)
+
+    response, vlm_output = await multimodal_manager.handle(text, image_paths)
+
     log = ConversationLog(
-        user_id=current_user.id,
-        text_query=payload.text_query,
-        response_text="(placeholder response)"
+        user_id=user.id,
+        text_query=text,
+        image_urls=image_paths or None,
+        vlm_output=vlm_output,
+        response_text=response,
+        llm_model_name="mock-llm",
+        vlm_model_name="mock-vlm",
     )
 
     db.add(log)
     db.commit()
-    db.refresh(log)
-    return log
 
-@router.get("/history", response_model=list[ChatLogOut])
-def get_chat_history(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return (
-        db.query(ConversationLog)
-        .filter(ConversationLog.user_id == current_user.id)
-        .order_by(ConversationLog.timestamp.desc())
-        .all()
-    )
+    return {"response": response}
