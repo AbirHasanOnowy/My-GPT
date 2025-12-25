@@ -9,6 +9,65 @@ from app.services.multimodal_manager import MultimodalManager
 
 router = APIRouter()
 
+# @router.post("/with_image")
+# async def multimodal_chat(
+#     text: Optional[str] = Form(None),
+#     images: Optional[List[UploadFile]] = File(None),
+#     current_user: User = Depends(get_current_user),
+#     db: Session = Depends(get_db),
+# ):
+#     """
+#     Accept text + images, run full multimodal pipeline, return response.
+#     """
+
+#     multimodal_manager = MultimodalManager(db=db)
+
+#     # ✅ Call handle_request properly
+#     log = await multimodal_manager.handle_request(
+#         user_id=current_user.id,
+#         text=text,
+#         images=images or []
+#     )
+
+#     # Return only needed fields
+#     return {
+#         "response_text": log.response_text,
+#         "vlm_output": log.vlm_output,
+#         "image_urls": log.image_urls,
+#         "llm_model": log.llm_model_name,
+#         "vlm_model": log.vlm_model_name,
+#         "timestamp": log.timestamp
+#     }
+
+# @router.post("/without_image")
+# async def multimodal_chat_without_image(
+#     text: Optional[str] = Form(None),
+#     current_user: User = Depends(get_current_user),
+#     db: Session = Depends(get_db),
+# ):
+#     """
+#     Accept only text, run full multimodal pipeline, return response.
+#     """
+
+#     multimodal_manager = MultimodalManager(db=db)
+
+#     # ✅ Call handle_request properly
+#     log = await multimodal_manager.handle_request(
+#         user_id=current_user.id,
+#         text=text,
+#         images=[]
+#     )
+
+#     # Return only needed fields
+#     return {
+#         "response_text": log.response_text,
+#         "vlm_output": log.vlm_output,
+#         "image_urls": log.image_urls,
+#         "llm_model": log.llm_model_name,
+#         "vlm_model": log.vlm_model_name,
+#         "timestamp": log.timestamp
+#     }
+
 @router.post("/")
 async def multimodal_chat(
     text: Optional[str] = Form(None),
@@ -17,24 +76,24 @@ async def multimodal_chat(
     db: Session = Depends(get_db),
 ):
     """
-    Accept text + optional images, run full multimodal pipeline, return response.
+    Unified endpoint:
+    - text only
+    - text + images
     """
 
     multimodal_manager = MultimodalManager(db=db)
 
-    # ✅ Call handle_request properly
     log = await multimodal_manager.handle_request(
         user_id=current_user.id,
         text=text,
-        images=images
+        images=images or [],
     )
 
-    # Return only needed fields
     return {
         "response_text": log.response_text,
         "vlm_output": log.vlm_output,
         "image_urls": log.image_urls,
         "llm_model": log.llm_model_name,
         "vlm_model": log.vlm_model_name,
-        "timestamp": log.timestamp
+        "timestamp": log.timestamp,
     }

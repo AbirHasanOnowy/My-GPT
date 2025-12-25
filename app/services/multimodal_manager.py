@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
+from sqlalchemy import select, desc
 
 from app.db.models.conversation_log import ConversationLog
 from app.services.vlm_manager import VLMManager
@@ -29,30 +30,32 @@ class MultimodalManager:
         text: Optional[str],
         images: Optional[List[UploadFile]],
     ) -> ConversationLog:
-        """
-        Full multimodal pipeline.
-        """
 
+        images = images or []
+
+        # 1️⃣ Fetch conversation memory
+        # history = self._fetch_recent_history(user_id)
+        # chat_context = self._build_chat_context(history)
+
+        # 2️⃣ Save images
         image_paths = []
+        for image in images:
+            path = await save_image(image)
+            image_paths.append(path)
 
-        # 1️⃣ Save images
-        if images:
-            for image in images:
-                path = await save_image(image)
-                image_paths.append(path)
-
-        # 2️⃣ VLM processing
+        # 3️⃣ VLM processing
         vlm_output = None
         if image_paths:
             vlm_output = await self.vlm_manager.process_images(image_paths)
 
-        # 3️⃣ LLM reasoning
+        # 4️⃣ LLM reasoning WITH MEMORY
         response_text = await self.chat_manager.generate_response(
             user_text=text,
-            vlm_output=vlm_output,
+            vlm_output=vlm_output
+            # ,chat_history=chat_context
         )
 
-        # 4️⃣ Persist conversation
+        # 5️⃣ Persist conversation
         log = ConversationLog(
             user_id=user_id,
             text_query=text,
@@ -68,3 +71,30 @@ class MultimodalManager:
         self.db.refresh(log)
 
         return log
+
+    def _fetch_recent_history(self, user_id, limit: int = 5):
+        stmt = (
+            select(ConversationLog)
+            .where(ConversationLog.user_id == user_id)
+            .order_by(desc(ConversationLog.timestamp))
+            .limit(limit)
+        )
+        return list(reversed(self.db.execute(stmt).scalars().all()))
+
+    
+    def _build_chat_context(self, history):
+        messages = []
+
+        for log in history:
+            if log.text_query:
+                messages.append({
+                    "role": "user",
+                    "content": log.text_query
+                })
+
+            messages.append({
+                "role": "assistant",
+                "content": log.response_text
+            })
+
+        return messages

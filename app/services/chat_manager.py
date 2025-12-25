@@ -13,8 +13,9 @@ class ChatManager:
 
     async def generate_response(
         self,
-        user_text: Optional[str],
-        vlm_output: Optional[Dict],
+        user_text: Optional[str] = None,
+        vlm_output: Optional[Dict] = None,
+        # chat_history: Optional[list[dict]] = None,
     ) -> str:
         """
         Generate a reasoning-aware response using LLM.
@@ -22,6 +23,13 @@ class ChatManager:
 
         # ---- MOCK LLM IMPLEMENTATION ----
         # Replace later with LLaMA / HF / OpenAI
+
+        # commented out the previou chat history part 
+        # chat_history = chat_history or []
+        user_text = user_text or ""
+
+        # for msg in chat_history:
+        #     user_text += f"{msg['role'].upper()}: {msg['content']}\n"
 
         response_parts = []
 
