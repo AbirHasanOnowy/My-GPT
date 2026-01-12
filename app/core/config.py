@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str           # Will be read from .env
+    DEBUG_ALEMBIC: bool = False # Will be read from .env
     SECRET_KEY: str             # Will be read from .env
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # Default value if not in .env
     UPLOAD_DIR: ClassVar[str] = "app/uploads"
