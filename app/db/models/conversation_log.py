@@ -7,7 +7,7 @@ from pgvector.sqlalchemy import Vector
 
 from app.db.base import Base
 
-EMBEDDING_DIM = 768  # BLIP-2 typical size (can change later)
+EMBEDDING_DIM = 768  # keep consistent with your model later
 
 class ConversationLog(Base):
     __tablename__ = "conversation_logs"
@@ -28,9 +28,12 @@ class ConversationLog(Base):
 
     response_text = Column(Text, nullable=False)
 
-    # Stage 7+ (must be nullable for now)
+    # Stage 7+
     llm_model_name = Column(Text, nullable=True)
     vlm_model_name = Column(Text, nullable=True)
+
+    # 🔥 Stage 8.2 — vector embedding
+    embedding = Column(Vector(EMBEDDING_DIM), nullable=True)
 
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 

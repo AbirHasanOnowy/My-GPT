@@ -1,8 +1,8 @@
-"""create users and conversation_logs
+"""initial schema
 
-Revision ID: ae194ceb5d2a
+Revision ID: 248d1fbe5264
 Revises: 
-Create Date: 2025-12-21 23:18:18.418393
+Create Date: 2026-01-08 07:52:08.055024
 
 """
 from typing import Sequence, Union
@@ -10,9 +10,11 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from pgvector.sqlalchemy import Vector
+
 
 # revision identifiers, used by Alembic.
-revision: str = 'ae194ceb5d2a'
+revision: str = '248d1fbe5264'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,8 +39,9 @@ def upgrade() -> None:
     sa.Column('image_urls', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('vlm_output', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('response_text', sa.Text(), nullable=False),
-    sa.Column('llm_model_name', sa.Text(), nullable=False),
-    sa.Column('vlm_model_name', sa.Text(), nullable=False),
+    sa.Column('llm_model_name', sa.Text(), nullable=True),
+    sa.Column('vlm_model_name', sa.Text(), nullable=True),
+    sa.Column('embedding', Vector(768), nullable=True),
     sa.Column('timestamp', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
