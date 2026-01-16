@@ -22,9 +22,6 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    print("Password before hashing:", request.password)
-
-    
     new_user = User(
         email=request.email,
         password_hash=hash_password(request.password)
@@ -63,27 +60,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 # -------------------------
-# Dependency: get current user
+# Dependency: get current user (moved to deps.py to avoid duplication)
 # -------------------------
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    
-    user_id_str: Optional[str] = payload.get("sub")
-    if not user_id_str:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
-    
-    try:
-        user_id = UUID(user_id_str)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user ID in token")
-    
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    return user
 
 # -------------------------
 # Example protected route

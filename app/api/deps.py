@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.db.session import get_db
 from app.core.security import decode_access_token
@@ -27,7 +28,15 @@ def get_current_user(
             detail="Invalid token payload",
         )
 
-    user = db.get(User, user_id)
+    try:
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user ID in token",
+        )
+
+    user = db.get(User, user_uuid)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

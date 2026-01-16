@@ -6,6 +6,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine, pool, text
 import pgvector.sqlalchemy  # noqa: F401
+from dotenv import load_dotenv
 
 # Make app importable
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -50,6 +51,7 @@ def run_migrations_online() -> None:
     with engine.connect() as connection:
         # Enable pgvector (safe to run multiple times)
         connection.execute(text('CREATE EXTENSION IF NOT EXISTS "vector";'))
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
 
         # Optional debug (dev only)
         if os.getenv("DEBUG_ALEMBIC") == "1":
@@ -57,6 +59,7 @@ def run_migrations_online() -> None:
                 text("SELECT current_database(), inet_server_addr(), inet_server_port();")
             )
             print("ALEMBIC CONNECTED TO:", result.fetchone())
+            print("Database:", connection.execute(text("SELECT current_database()")).fetchone())
 
         context.configure(
             connection=connection,

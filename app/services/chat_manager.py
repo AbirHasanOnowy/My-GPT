@@ -51,3 +51,4 @@ class ChatManager:
 
     def get_model_name(self) -> str:
         return self.model_name
+

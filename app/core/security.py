@@ -17,8 +17,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def hash_password(password: str) -> str:
     # Truncate string to 72 characters (not bytes)
     truncated_password = password[:72]
-    print("Password before hashing:", truncated_password)
-    print("hashed pass: ",pwd_context.hash(truncated_password))
     return pwd_context.hash(truncated_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
